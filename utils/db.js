@@ -5,6 +5,8 @@
  */
 
 import mongodb from 'mongodb';
+// eslint-disable-next-line no-unused-vars
+import Collection from 'mongodb/lib/collection';
 
 /**
  * Class representing a MongoDB client.
@@ -47,6 +49,22 @@ class DBClient {
    */
   async nbFiles() {
     return this.client.db().collection('files').countDocuments();
+  }
+
+  /**
+   * Get a reference to the users collection in the database.
+   * @return {Collection} - The users collection.
+   */
+  async usersCollection() {
+    return this.client.db().collection('users');
+  }
+
+  /**
+   * Get a reference to the files collection in the database.
+   * @return {Collection} - The files collection.
+   */
+  async filesCollection() {
+    return this.client.db().collection('files');
   }
 }
 
