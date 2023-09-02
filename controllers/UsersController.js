@@ -24,4 +24,10 @@ export default class UsersController {
     userQueue.add({ userId });
     return response.status(201).json({ id: userId, email });
   }
+
+  static async getMe(request, response) {
+    const { user } = request;
+
+    response.status(200).json({ email: user.email, id: user._id.toString() });
+  }
 }
