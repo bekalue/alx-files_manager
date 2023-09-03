@@ -19,7 +19,7 @@ router.get('/users/me', xTokenAuthenticate, UsersController.getMe);
 
 router.post('/files', xTokenAuthenticate, FilesController.postUpload);
 router.get('/files/:id', xTokenAuthenticate, FilesController.getShow);
-// router.get('/files', xTokenAuthenticate, FilesController.getIndex);
+router.get('/files', xTokenAuthenticate, FilesController.getIndex);
 // router.put('/files/:id/publish', xTokenAuthenticate, FilesController.putPublish);
 // router.put('/files/:id/unpublish', xTokenAuthenticate, FilesController.putUnpublish);
 // router.get('/files/:id/data', FilesController.getFile);
