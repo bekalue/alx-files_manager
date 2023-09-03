@@ -2,7 +2,7 @@ import express from 'express';
 import AppController from '../controllers/AppController';
 import AuthController from '../controllers/AuthController';
 import UsersController from '../controllers/UsersController';
-// import FilesController from '../controllers/FilesController';
+import FilesController from '../controllers/FilesController';
 import { basicAuthenticate, xTokenAuthenticate } from '../middlewares/auth';
 // import { APIError, errorResponse } from '../middlewares/error';
 
@@ -17,8 +17,8 @@ router.get('/disconnect', xTokenAuthenticate, AuthController.getDisconnect);
 router.post('/users', UsersController.postNew);
 router.get('/users/me', xTokenAuthenticate, UsersController.getMe);
 
-// router.post('/files', xTokenAuthenticate, FilesController.postUpload);
-// router.get('/files/:id', xTokenAuthenticate, FilesController.getShow);
+router.post('/files', xTokenAuthenticate, FilesController.postUpload);
+router.get('/files/:id', xTokenAuthenticate, FilesController.getShow);
 // router.get('/files', xTokenAuthenticate, FilesController.getIndex);
 // router.put('/files/:id/publish', xTokenAuthenticate, FilesController.putPublish);
 // router.put('/files/:id/unpublish', xTokenAuthenticate, FilesController.putUnpublish);
