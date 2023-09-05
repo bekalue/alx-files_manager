@@ -4,7 +4,7 @@ import AuthController from '../controllers/AuthController';
 import UsersController from '../controllers/UsersController';
 import FilesController from '../controllers/FilesController';
 import { basicAuthenticate, xTokenAuthenticate } from '../middlewares/auth';
-// import { APIError, errorResponse } from '../middlewares/error';
+import { APIError, errorResponse } from '../middlewares/error';
 
 const router = express.Router();
 
@@ -24,9 +24,9 @@ router.put('/files/:id/publish', xTokenAuthenticate, FilesController.putPublish)
 router.put('/files/:id/unpublish', xTokenAuthenticate, FilesController.putUnpublish);
 router.get('/files/:id/data', FilesController.getFile);
 
-// router.all('*', (req, res, next) => {
-// errorResponse(new APIError(404, `Cannot ${req.method} ${req.url}`), req, res, next);
-// });
-// router.use(errorResponse);
+router.all('*', (req, res, next) => {
+  errorResponse(new APIError(404, `Cannot ${req.method} ${req.url}`), req, res, next);
+});
+router.use(errorResponse);
 
 export default router;
