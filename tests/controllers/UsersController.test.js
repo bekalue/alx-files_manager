@@ -1,97 +1,40 @@
 /* eslint-disable import/no-named-as-default */
-import dbClient from '../../utils/db';
+import sha1 from 'sha1';
+import Queue from 'bull/lib/queue';
+import dbClient from '../utils/db';
 
-describe('+ UserController', () => {
-  const mockUser = {
-    email: 'beloxxi@blues.com',
-    password: 'melody1982',
-  };
+const userQueue = new Queue('email sending');
 
-  before(function (done) {
-    this.timeout(10000);
-    dbClient.usersCollection()
-      .then((usersCollection) => {
-        usersCollection.deleteMany({ email: mockUser.email })
-          .then(() => done())
-          .catch((deleteErr) => done(deleteErr));
-      }).catch((connectErr) => done(connectErr));
-    setTimeout(done, 5000);
-  });
+export default class UsersController {
+  static async postNew(req, res) {
+    const email = req.body ? req.body.email : null;
+    const password = req.body ? req.body.password : null;
 
-  describe('+ POST: /users', () => {
-    it('+ Fails when there is no email and there is password', function () {
-      return new Promise((done) => {
-        this.timeout(5000);
-        request.post('/users')
-          .send({
-            password: mockUser.password,
-          })
-          .expect(400)
-          .end((err, res) => {
-            if (err) {
-              return done(err);
-            }
-            expect(res.body).to.deep.eql({ error: 'Missing email' });
-            done();
-          });
-      });
-    });
+    if (!email) {
+      res.status(400).json({ error: 'Missing email' });
+      return;
+    }
+    if (!password) {
+      res.status(400).json({ error: 'Missing password' });
+      return;
+    }
+    const user = await (await dbClient.usersCollection()).findOne({ email });
 
-    it('+ Fails when there is email and there is no password', function () {
-      return new Promise((done) => {
-        this.timeout(5000);
-        request.post('/users')
-          .send({
-            email: mockUser.email,
-          })
-          .expect(400)
-          .end((err, res) => {
-            if (err) {
-              return done(err);
-            }
-            expect(res.body).to.deep.eql({ error: 'Missing password' });
-            done();
-          });
-      });
-    });
+    if (user) {
+      res.status(400).json({ error: 'Already exist' });
+      return;
+    }
+    const insertionInfo = await (await dbClient.usersCollection())
+      .insertOne({ email, password: sha1(password) });
+    const userId = insertionInfo.insertedId.toString();
 
-    it('+ Succeeds when the new user has a password and email', function () {
-      return new Promise((done) => {
-        this.timeout(5000);
-        request.post('/users')
-          .send({
-            email: mockUser.email,
-            password: mockUser.password,
-          })
-          .expect(201)
-          .end((err, res) => {
-            if (err) {
-              return done(err);
-            }
-            expect(res.body.email).to.eql(mockUser.email);
-            expect(res.body.id.length).to.be.greaterThan(0);
-            done();
-          });
-      });
-    });
+    userQueue.add({ userId });
+    res.status(201).json({ email, id: userId });
+  }
 
-    it('+ Fails when the user already exists', function () {
-      return new Promise((done) => {
-        this.timeout(5000);
-        request.post('/users')
-          .send({
-            email: mockUser.email,
-            password: mockUser.password,
-          })
-          .expect(400)
-          .end((err, res) => {
-            if (err) {
-              return done(err);
-            }
-            expect(res.body).to.deep.eql({ error: 'Already exist' });
-            done();
-          });
-      });
-    });
-  });
-});
+  static async getMe(req, res) {
+    const { user } = req;
+
+    res.status(200).json({ email: user.email, id: user._id.toString() });
+  }
+}
